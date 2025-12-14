@@ -1,36 +1,33 @@
 pipeline {
     agent any
-
     tools {
         jdk 'JDK17'
         maven 'Maven3'
     }
-
     stages {
         stage('Checkout') {
-            // write your logic here
-            steps{
-            git branch: 'main',
-            url: 'https://github.com/expertszen/java-standalone-application.git'
+            steps {
+                // write your logic here
+                git branch: 'main',
+                    url:'https://github.com/Senthilkumar-Thangavel/java-batch-job-example.git'
             }
-                    
         }
         stage('Build') {
             // write your logic here
             steps{
-            bat 'mvn clean compile'
+                bat 'mvn clean install -DskipTests'
             }
         }
         stage('Run Application') {
             // write your logic here
             steps{
-            bat 'mvn package'
+            bat 'mvn exec:java -Dexec.mainClass="com.expertszen.BatchJobApp"'
             }
         }
         stage('Test') {
             // write your logic here
             steps{
-            bat 'mvn test'
+                bat 'mvn test'
             }
             post {
                 always {
@@ -38,15 +35,19 @@ pipeline {
                 }
             }
         }
+        
     }
-    post {
-    success {
-      echo "Build succeeded — triggering downstream job"
-      // trigger downstream job; wait:false => don't block. Set wait:true to wait and capture result.
-      build job: '402646-Senthilkumar-Thangavel-java-second-ci-job', wait: false
+         post {
+        failure {
+            mail to: 'senthilt.reg@gmail.com',
+                 subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: """Job '${env.JOB_NAME}' build #${env.BUILD_NUMBER} failed.
+                 Check console output at ${env.BUILD_URL}console"""
+        }
+        success {
+            mail to: 'senthilt.reg@gmail.com',
+                 subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Job '${env.JOB_NAME}' succeeded. ${env.BUILD_URL}"
+        }
     }
-    failure {
-      echo "Build failed — not triggering downstream job"
-    }
-  }
 }
