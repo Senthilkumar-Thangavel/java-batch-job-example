@@ -15,7 +15,7 @@ pipeline {
         stage('Build') {
             // write your logic here
             steps{
-                bat 'mvn tdtyr clean install -DskipTests'
+                bat 'mvn clean install -DskipTests'
             }
         }
         stage('Run Application') {
